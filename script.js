@@ -279,4 +279,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch immediately, then poll every 3 seconds
     fetchMessages();
     setInterval(fetchMessages, 3000);
+
+    // Poll curated report every 6 hours (21600000 ms)
+    // Only fetch if it has been loaded at least once (tab was clicked)
+    setInterval(() => {
+        if (curatedLoaded) {
+            fetchCuratedReport();
+        }
+    }, 6 * 60 * 60 * 1000);
 });

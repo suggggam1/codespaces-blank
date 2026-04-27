@@ -10,9 +10,9 @@ export default async function handler(req, res) {
         }
         const data = await response.json();
         
-        // Add cache headers so Vercel can cache the response if needed, 
+        // Add cache headers so Vercel caches the response for 6 hours (21600 seconds)
         // to prevent overloading the target API
-        res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+        res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate=86400');
         res.status(200).json(data);
     } catch (error) {
         console.error('Error fetching curated data:', error);
