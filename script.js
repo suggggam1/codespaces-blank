@@ -77,6 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return true;
             });
 
+            // Sort companies in ascending order based on 'first_seen' date
+            uniqueCompanies.sort((a, b) => {
+                // If 'first_seen' is missing, treat it as very old (0) so it sorts to the top
+                const dateA = a.first_seen ? new Date(a.first_seen).getTime() : 0;
+                const dateB = b.first_seen ? new Date(b.first_seen).getTime() : 0;
+                return dateA - dateB;
+            });
+
             uniqueCompanies.forEach(company => {
                 const card = document.createElement('div');
                 card.className = 'message';
