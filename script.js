@@ -68,7 +68,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Companies
         if (data.companies && data.companies.length > 0) {
-            data.companies.forEach(company => {
+            // Filter out any potential duplicates from the API based on username
+            const seenUsernames = new Set();
+            const uniqueCompanies = data.companies.filter(company => {
+                const identifier = (company.username || company.name || '').toLowerCase();
+                if (seenUsernames.has(identifier)) return false;
+                seenUsernames.add(identifier);
+                return true;
+            });
+
+            uniqueCompanies.forEach(company => {
                 const card = document.createElement('div');
                 card.className = 'message';
 
