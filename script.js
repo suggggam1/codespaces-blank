@@ -102,8 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${company.confidence ? `<span class="confidence-badge ${confidenceClass}">${escapeHTML(company.confidence)}</span>` : ''}
                         </div>
                         
-                        ${company.description ? `<div class="company-description">${escapeHTML(company.description)}</div>` : ''}
-                        
                         <div class="embed-fields">
                             ${company.sector ? `
                             <div class="embed-field">
