@@ -1,6 +1,123 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const messageContainer = document.getElementById('message-container');
+    const liveFeedContainer = document.getElementById('live-feed');
+    const curatedFeedContainer = document.getElementById('curated-feed');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    
     let lastMessageCount = 0;
+    let curatedLoaded = false;
+
+    // Tab Switching Logic
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all
+            tabBtns.forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.message-container').forEach(c => c.style.display = 'none');
+            
+            // Add active class to clicked
+            btn.classList.add('active');
+            const targetId = btn.getAttribute('data-target');
+            document.getElementById(targetId).style.display = 'grid';
+
+            // Load curated data if first time
+            if (targetId === 'curated-feed' && !curatedLoaded) {
+                fetchCuratedReport();
+            }
+        });
+    });
+
+    async function fetchCuratedReport() {
+        try {
+            const response = await fetch('/api/curated');
+            const data = await response.json();
+            
+            if (data && data.available) {
+                renderCuratedReport(data);
+                curatedLoaded = true;
+            } else {
+                curatedFeedContainer.innerHTML = '<div class="no-messages">Curated report is currently unavailable.</div>';
+            }
+        } catch (error) {
+            console.error('Error fetching curated report:', error);
+            curatedFeedContainer.innerHTML = '<div class="loading" style="color: red;">Error loading curated report.</div>';
+        }
+    }
+
+    function renderCuratedReport(data) {
+        curatedFeedContainer.innerHTML = ''; // Clear container
+
+        // Render Stats
+        if (data.stats) {
+            const statsContainer = document.createElement('div');
+            statsContainer.className = 'stats-container';
+            statsContainer.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-value">${data.stats.companies_this_week || 0}</div>
+                    <div class="stat-label">Companies This Week</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${data.stats.total_discovery_events || 0}</div>
+                    <div class="stat-label">Discovery Events</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${data.stats.active_users || 0}</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            `;
+            curatedFeedContainer.appendChild(statsContainer);
+        }
+
+        // Render Companies
+        if (data.companies && data.companies.length > 0) {
+            data.companies.forEach(company => {
+                const card = document.createElement('div');
+                card.className = 'message';
+
+                const confidenceClass = company.confidence ? `confidence-${company.confidence.toLowerCase()}` : '';
+
+                card.innerHTML = `
+                    <div class="embed-content">
+                        <div class="company-header">
+                            ${company.profile_image_url ? `<img src="${escapeHTML(company.profile_image_url)}" alt="Avatar" class="company-avatar" onerror="this.style.display='none'">` : ''}
+                            <div class="company-info">
+                                <a href="https://x.com/${escapeHTML(company.username)}" target="_blank" class="company-name">${escapeHTML(company.name || company.username)}</a>
+                                <span class="company-username">@${escapeHTML(company.username)}</span>
+                            </div>
+                            ${company.confidence ? `<span class="confidence-badge ${confidenceClass}">${escapeHTML(company.confidence)}</span>` : ''}
+                        </div>
+                        
+                        ${company.description ? `<div class="company-description">${escapeHTML(company.description)}</div>` : ''}
+                        
+                        <div class="embed-fields">
+                            ${company.sector ? `
+                            <div class="embed-field">
+                                <div class="embed-field-name">Sector</div>
+                                <div class="embed-field-value">${escapeHTML(company.sector)}</div>
+                            </div>` : ''}
+                            ${company.followers_count !== undefined ? `
+                            <div class="embed-field">
+                                <div class="embed-field-name">Followers</div>
+                                <div class="embed-field-value">${company.followers_count}</div>
+                            </div>` : ''}
+                            ${company.signal_strength !== undefined ? `
+                            <div class="embed-field">
+                                <div class="embed-field-name">Signal Strength</div>
+                                <div class="embed-field-value">${company.signal_strength}</div>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                    <div class="message-footer">
+                        <span class="timestamp">First seen: ${company.first_seen ? escapeHTML(company.first_seen) : 'Unknown'}</span>
+                    </div>
+                `;
+                curatedFeedContainer.appendChild(card);
+            });
+        } else {
+            const noData = document.createElement('div');
+            noData.className = 'no-messages';
+            noData.textContent = 'No companies found in this report.';
+            curatedFeedContainer.appendChild(noData);
+        }
+    }
 
     async function fetchMessages() {
         try {
@@ -9,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Only re-render if we have new messages or if it's the first load
             if (messages.length === 0) {
-                messageContainer.innerHTML = '<div class="no-messages">No projects found yet. Waiting for new alerts in the group...</div>';
+                liveFeedContainer.innerHTML = '<div class="no-messages">No projects found yet. Waiting for new alerts in the group...</div>';
                 return;
             }
 
@@ -22,13 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error fetching messages:', error);
             if (lastMessageCount === 0) {
-                messageContainer.innerHTML = '<div class="loading" style="color: red;">Error connecting to server.</div>';
+                liveFeedContainer.innerHTML = '<div class="loading" style="color: red;">Error connecting to server.</div>';
             }
         }
     }
 
     function renderMessages(messages) {
-        messageContainer.innerHTML = ''; // Clear container
+        liveFeedContainer.innerHTML = ''; // Clear container
 
         messages.forEach(msg => {
             const messageEl = document.createElement('div');
@@ -78,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            messageContainer.appendChild(messageEl);
+            liveFeedContainer.appendChild(messageEl);
         });
     }
 
