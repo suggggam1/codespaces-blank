@@ -45,27 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCuratedReport(data) {
         curatedFeedContainer.innerHTML = ''; // Clear container
 
-        // Render Stats
-        if (data.stats) {
-            const statsContainer = document.createElement('div');
-            statsContainer.className = 'stats-container';
-            statsContainer.innerHTML = `
-                <div class="stat-box">
-                    <div class="stat-value">${data.stats.companies_this_week || 0}</div>
-                    <div class="stat-label">Companies This Week</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value">${data.stats.total_discovery_events || 0}</div>
-                    <div class="stat-label">Discovery Events</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value">${data.stats.active_users || 0}</div>
-                    <div class="stat-label">Active Users</div>
-                </div>
-            `;
-            curatedFeedContainer.appendChild(statsContainer);
-        }
-
         // Render Companies
         if (data.companies && data.companies.length > 0) {
             // Filter out any potential duplicates from the API based on username
@@ -101,6 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             ${company.confidence ? `<span class="confidence-badge ${confidenceClass}">${escapeHTML(company.confidence)}</span>` : ''}
                         </div>
+                        
+                        ${company.description ? `<div class="company-description">${escapeHTML(company.description)}</div>` : ''}
                         
                         <div class="embed-fields">
                             ${company.sector ? `
