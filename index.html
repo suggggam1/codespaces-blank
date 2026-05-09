@@ -9,8 +9,53 @@
     
     <!-- Vercel Web Analytics -->
     <script defer src="/_vercel/insights/script.js"></script>
+    <style>
+        .paused-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+        .paused-message {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 6px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            margin-top: 50px;
+        }
+        .paused-message h1 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        .paused-message p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .paused-message a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        .paused-message a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
+    <div class="container paused-container">
+        <div class="paused-message">
+            <h1>Website Temporarily Paused</h1>
+            <p>Please contact <a href="https://x.com/nftprada" target="_blank">@nftprada</a> on Twitter or <strong>elonczmusk</strong> through Discord.</p>
+        </div>
+    </div>
+
+    <!-- TEMPORARILY HIDDEN ORIGINAL CONTENT
     <div class="container">
         <header>
             <h1>Twitter Early Project Finder</h1>
@@ -32,5 +77,6 @@
     </div>
 
     <script src="script.js"></script>
+    -->
 </body>
 </html>
