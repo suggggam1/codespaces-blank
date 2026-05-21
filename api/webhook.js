@@ -83,6 +83,50 @@ export default async function handler(req, res) {
             // Keep only the latest 50 messages
             await redis.ltrim('telegram_messages', 0, 49);
             console.log('Successfully saved new message to Redis.');
+
+            // Forward to Discord if URL is provided
+            if (process.env.DISCORD_WEBHOOK_URL) {
+                try {
+                    let description = '';
+                    const fields = [];
+                    const knownKeys = /^(Name|Followers|Following|Created|Tweets|Followed by)/i;
+                    
+                    for (let i = 2; i < lines.length; i++) {
+                        const line = lines[i];
+                        if (line.match(/^\d{2}:\d{2}\s*-\s*\d{2}\/\d{2}\/\d{4}$/)) continue;
+                        
+                        const colonIndex = line.indexOf(':');
+                        if (colonIndex !== -1 && !line.match(/^\d{2}:\d{2}/)) {
+                            const k = line.substring(0, colonIndex).trim();
+                            const v = line.substring(colonIndex + 1).trim();
+                            if (!k.toLowerCase().includes('followed by')) {
+                                fields.push({ name: k, value: v, inline: false });
+                            }
+                        } else {
+                            if (!line.match(knownKeys)) {
+                                description += line + '\n';
+                            }
+                        }
+                    }
+
+                    const embed = {
+                        title: currentProjectName || 'New Alert',
+                        url: currentProjectName ? `https://x.com/${currentProjectName.replace('@', '')}` : null,
+                        description: description.trim(),
+                        color: 16776960, // Yellow accent line
+                        fields: fields
+                    };
+
+                    await fetch(process.env.DISCORD_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ embeds: [embed] })
+                    });
+                    console.log('Successfully forwarded to Discord.');
+                } catch (discordErr) {
+                    console.error('Error forwarding to Discord:', discordErr);
+                }
+            }
         } else {
             console.log('Duplicate message ignored.');
         }
