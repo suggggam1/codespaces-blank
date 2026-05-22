@@ -170,9 +170,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If projectName exists, strip any @ symbols just in case, and trim
                 const twitterHandle = parsedData.projectName ? parsedData.projectName.replace('@', '').trim() : '';
                 
+                // Use unavatar.io to fetch the Twitter profile picture automatically
+                const avatarHTML = twitterHandle ? `<img src="https://unavatar.io/twitter/${escapeHTML(twitterHandle)}?fallback=false" alt="Avatar" class="company-avatar" referrerpolicy="no-referrer" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'%238b949e\\'><path d=\\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z\\'/></svg>'">` : `<div class="company-avatar" style="display:flex;align-items:center;justify-content:center;color:#8b949e;"><svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>`;
+                
                 contentHTML = `
                     <div class="embed-title">${escapeHTML(parsedData.title)}</div>
-                    ${parsedData.projectName ? `<a href="https://x.com/${escapeHTML(twitterHandle)}" target="_blank" class="embed-project-name">${escapeHTML(parsedData.projectName)}</a>` : ''}
+                    <div class="company-header" style="margin-bottom: 16px;">
+                        ${avatarHTML}
+                        <div class="company-info">
+                            ${parsedData.projectName ? `<a href="https://x.com/${escapeHTML(twitterHandle)}" target="_blank" class="company-name">${escapeHTML(parsedData.projectName)}</a>` : ''}
+                            ${twitterHandle ? `<span class="company-username">@${escapeHTML(twitterHandle)}</span>` : ''}
+                        </div>
+                    </div>
+                    ${parsedData.description ? `<div class="company-description">${escapeHTML(parsedData.description)}</div>` : ''}
                     <div class="embed-fields">
                         ${fieldsHTML}
                     </div>
@@ -203,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const title = lines[0]; // e.g. "📢 NEW ACCOUNT FOUND"
         let projectName = '';
+        let description = '';
         const fields = [];
         let startIndex = 1;
 
@@ -232,22 +243,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (colonIndex !== -1 && !line.match(/^\d{2}:\d{2}/)) { // ensure it's not a timestamp colon
                 key = line.substring(0, colonIndex).trim();
                 value = line.substring(colonIndex + 1).trim();
-            } else {
-                key = line;
-                // If the next line exists and doesn't look like another known key, it's the value
-                if (i + 1 < lines.length && !lines[i+1].match(knownKeys)) {
-                    value = lines[i+1].trim();
-                    i++; // Skip the value line in the next iteration
+                
+                // Exclude "Followed by" entirely as requested
+                if (!key.toLowerCase().includes('followed by')) {
+                    fields.push({ key, value });
                 }
-            }
-
-            // Exclude "Followed by" entirely as requested
-            if (key.toLowerCase().includes('followed by')) {
-                continue;
-            }
-
-            if (key) {
-                fields.push({ key, value });
+            } else {
+                // If it doesn't match known keys and isn't a key-value pair, it's part of the description
+                if (!line.match(knownKeys)) {
+                    description += line + '\n';
+                } else {
+                    key = line;
+                    // If the next line exists and doesn't look like another known key, it's the value
+                    if (i + 1 < lines.length && !lines[i+1].match(knownKeys)) {
+                        value = lines[i+1].trim();
+                        i++; // Skip the value line in the next iteration
+                    }
+                    if (!key.toLowerCase().includes('followed by')) {
+                        fields.push({ key, value });
+                    }
+                }
             }
         }
 
@@ -258,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isStructured: true,
                 title,
                 projectName,
+                description: description.trim(),
                 fields
             };
         }
