@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     <div class="embed-content">
                         <div class="company-header">
-                            ${company.profile_image_url ? `<img src="${escapeHTML(company.profile_image_url)}" alt="Avatar" class="company-avatar" onerror="this.style.display='none'">` : ''}
+                            ${company.profile_image_url ? `<img src="${escapeHTML(company.profile_image_url)}" alt="Avatar" class="company-avatar" referrerpolicy="no-referrer" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'%238b949e\\'><path d=\\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z\\'/></svg>'">` : `<div class="company-avatar" style="display:flex;align-items:center;justify-content:center;color:#8b949e;"><svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>`}
                             <div class="company-info">
                                 <a href="https://x.com/${escapeHTML(company.username)}" target="_blank" class="company-name">${escapeHTML(company.name || company.username)}</a>
                                 <span class="company-username">@${escapeHTML(company.username)}</span>
