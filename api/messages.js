@@ -60,7 +60,7 @@ function reconstructText(item) {
 
     // 5. Account Created At
     if (item.user_created_at) {
-        lines.push(`Created: ${item.user_created_at}`);
+        lines.push(`Created: ${formatTwitterDate(item.user_created_at)}`);
     }
 
     // 6. Location
@@ -74,4 +74,20 @@ function reconstructText(item) {
     }
     
     return lines.join('\n');
+}
+
+// Helper to format Twitter date string (e.g., "Mon Jun 15 01:33:44 +0000 2026")
+// to just "Month Date" as requested (e.g., "Jun 15")
+function formatTwitterDate(dateString) {
+    if (!dateString) return '';
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Just return Month and Date as requested
+        return `${months[date.getMonth()]} ${date.getDate()}`;
+    } catch (e) {
+        return dateString;
+    }
 }
