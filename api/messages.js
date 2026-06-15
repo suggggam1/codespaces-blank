@@ -21,18 +21,13 @@ export default async function handler(req, res) {
         if (error) throw error;
 
         // Map Supabase data to the format the frontend expects
-        // We attempt to preserve the 'text' field if it exists, 
-        // or reconstruct it from columns if necessary.
         const mappedMessages = follows.map(item => {
-            // If the table already has a 'text' column from the old bot alerts, use it.
-            // Otherwise, we might need to build it so the frontend parser works,
-            // or return the raw columns.
-            
             return {
                 id: item.id,
-                text: item.text || reconstructText(item),
+                text: reconstructText(item),
                 timestamp: new Date(item.created_at).getTime(),
-                projectName: item.username || item.projectName || ''
+                projectName: item.username || '',
+                avatar: item.avatar || '' // Direct avatar URL from Supabase
             };
         });
         
@@ -43,19 +38,40 @@ export default async function handler(req, res) {
     }
 }
 
-// Helper to build a text block if the Supabase entry is structured but missing 'text'
+// Helper to build a text block from the new Supabase schema
 function reconstructText(item) {
-    if (item.raw_text) return item.text; // Use existing if available
-    
-    // Fallback: build a text block that matches the old TeleFeed format
-    // so the frontend script.js 'parseMessageText' function continues to work perfectly.
     let lines = ["📢 NEW ACCOUNT FOUND"];
+    
+    // 1. Username (Handle)
     if (item.username) lines.push(item.username);
+    
+    // 2. Description (Bio)
     if (item.description) lines.push(item.description);
-    if (item.name) lines.push(`Name: ${item.name}`);
-    if (item.followers_count !== undefined) lines.push(`Followers: ${item.followers_count}`);
-    if (item.following_count !== undefined) lines.push(`Following: ${item.following_count}`);
-    if (item.created_at_twitter) lines.push(`Created: ${item.created_at_twitter}`);
+    
+    // 3. Followers Count
+    if (item.followers_count !== undefined && item.followers_count !== null) {
+        lines.push(`Followers: ${item.followers_count}`);
+    }
+
+    // 4. Posts Count
+    if (item.posts_count !== undefined && item.posts_count !== null) {
+        lines.push(`Tweets: ${item.posts_count}`);
+    }
+
+    // 5. Account Created At
+    if (item.user_created_at) {
+        lines.push(`Created: ${item.user_created_at}`);
+    }
+
+    // 6. Location
+    if (item.location) {
+        lines.push(`Location: ${item.location}`);
+    }
+
+    // 7. Tracked Account (Who followed them)
+    if (item.tracked_account) {
+        lines.push(`Followed by: ${item.tracked_account}`);
+    }
     
     return lines.join('\n');
 }

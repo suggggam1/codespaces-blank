@@ -172,8 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const twitterHandle = parsedData.projectName ? parsedData.projectName.replace('@', '').trim() : '';
                 const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(twitterHandle || 'A')}&background=161b22&color=a1a1aa`;
                 
-                // Use unavatar.io to fetch the Twitter profile picture automatically
-                const avatarHTML = twitterHandle ? `<img src="https://unavatar.io/twitter/${escapeHTML(twitterHandle)}" alt="Avatar" class="company-avatar" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackAvatar}';">` : `<img src="${fallbackAvatar}" alt="Avatar" class="company-avatar">`;
+                // Prioritize the avatar from the database, then fallback to unavatar.io
+                const initialAvatarUrl = msg.avatar || (twitterHandle ? `https://unavatar.io/twitter/${escapeHTML(twitterHandle)}` : fallbackAvatar);
+
+                const avatarHTML = `<img src="${initialAvatarUrl}" alt="Avatar" class="company-avatar" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackAvatar}';">`;
                 
                 contentHTML = `
                     <div class="embed-title">${escapeHTML(parsedData.title)}</div>
