@@ -28,10 +28,24 @@ export default async function handler(req, res) {
             throw new Error(`Cloudflare API responded with ${response.status}`);
         }
 
-        const follows = await response.json();
+        let follows = await response.json();
+
+        // If Cloudflare returns a string (sometimes happens if not properly stringified/parsed)
+        if (typeof follows === 'string') {
+            try {
+                follows = JSON.parse(follows);
+            } catch (e) {
+                console.error('Failed to parse KV value as JSON:', follows);
+                return res.status(200).json([]);
+            }
+        }
+
+        // Ensure it's an array for the .map function
+        const followsArray = Array.isArray(follows) ? follows : [follows];
 
         // Map Cloudflare KV data to the format the frontend expects
-        const mappedMessages = follows.map(item => {
+        const mappedMessages = followsArray.map(item => {
+            if (!item) return null;
             return {
                 id: item.id || Math.random().toString(36).substr(2, 9),
                 text: reconstructText(item),
@@ -39,7 +53,7 @@ export default async function handler(req, res) {
                 projectName: item.username || '',
                 avatar: item.avatar || ''
             };
-        });
+        }).filter(Boolean);
         
         res.status(200).json(mappedMessages);
     } catch (error) {
