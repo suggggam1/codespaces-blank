@@ -35,7 +35,7 @@ export default async function handler(req, res) {
             return {
                 id: item.id || Math.random().toString(36).substr(2, 9),
                 text: reconstructText(item),
-                timestamp: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
+                timestamp: item.detectedAt ? new Date(item.detectedAt).getTime() : Date.now(),
                 projectName: item.username || '',
                 avatar: item.avatar || ''
             };
@@ -50,23 +50,22 @@ export default async function handler(req, res) {
 
 function reconstructText(item) {
     let lines = ["📢 NEW ACCOUNT FOUND"];
+    
+    // Use the username as the main handle
     if (item.username) lines.push(item.username);
+    
+    // Display the Name if available
+    if (item.displayName) lines.push(`Name: ${item.displayName}`);
+    
+    // Use the new simplified followers field
+    if (item.followers !== undefined && item.followers !== null) {
+        lines.push(`Followers: ${item.followers}`);
+    }
+    
+    // Include these only if they still exist in the data (backward compatibility)
     if (item.description) lines.push(item.description);
-    if (item.followers_count !== undefined && item.followers_count !== null) {
-        lines.push(`Followers: ${item.followers_count}`);
-    }
-    if (item.posts_count !== undefined && item.posts_count !== null) {
-        lines.push(`Tweets: ${item.posts_count}`);
-    }
-    if (item.user_created_at) {
-        lines.push(`Created: ${formatTwitterDate(item.user_created_at)}`);
-    }
-    if (item.location) {
-        lines.push(`Location: ${item.location}`);
-    }
-    if (item.tracked_account) {
-        lines.push(`Followed by: ${item.tracked_account}`);
-    }
+    if (item.location) lines.push(`Location: ${item.location}`);
+    
     return lines.join('\n');
 }
 
