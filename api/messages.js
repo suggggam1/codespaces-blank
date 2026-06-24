@@ -5,7 +5,10 @@ export default async function handler(req, res) {
 
     const workerUrl = process.env.CLOUDFLARE_WORKER_URL;
 
+    console.log('Fetching from Worker URL:', workerUrl);
+
     if (!workerUrl) {
+        console.error('CLOUDFLARE_WORKER_URL is missing!');
         return res.status(500).json({ error: 'CLOUDFLARE_WORKER_URL not configured' });
     }
 
@@ -16,7 +19,11 @@ export default async function handler(req, res) {
             },
         });
 
+        console.log('Worker Response Status:', response.status);
+
         if (!response.ok) {
+            const err = await response.text();
+            console.error('Worker Error Response:', err);
             throw new Error(`Cloudflare Worker responded with ${response.status}`);
         }
 
