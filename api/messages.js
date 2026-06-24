@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
     const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-    const keyName = 'latest_follows';
+    const keyName = process.env.CLOUDFLARE_KV_KEY_NAME || 'FOLLOWS_KV';
 
     try {
         const response = await fetch(
